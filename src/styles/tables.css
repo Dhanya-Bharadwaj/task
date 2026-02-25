@@ -1,0 +1,28 @@
+/**
+ * src/styles/tables.css
+ * Shared table styles used across all pages.
+ */
+
+.custom-table-container {
+    @apply w-full overflow-x-auto bg-white rounded-none shadow-sm;
+}
+
+.custom-table {
+    @apply w-full border-[0.5px] border-gray-300/80 text-sm text-gray-800;
+}
+
+.custom-table th,
+.custom-table td {
+    @apply px-4 py-2 border-b-[0.5px] border-gray-300/80 align-top;
+    word-break: break-word;
+    white-space: normal;
+}
+
+.custom-table thead {
+    @apply bg-gray-100;
+    text-align: left;
+}
+
+.custom-table tbody tr:hover {
+    @apply bg-gray-50 transition-colors;
+}

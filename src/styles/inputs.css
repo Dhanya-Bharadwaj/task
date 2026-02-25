@@ -1,0 +1,71 @@
+/**
+ * src/styles/inputs.css
+ * Shared input, textarea, select, checkbox styles.
+ */
+
+.input-field,
+textarea.input-field,
+select.input-field {
+    width: 100%;
+    font-size: 0.875rem;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.625rem;
+    height: 2.25rem;
+    line-height: 1.25rem;
+    background-color: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transition: all 0.15s ease-in-out;
+}
+
+.input-field:focus,
+textarea.input-field:focus,
+select.input-field:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+.input-field:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+textarea.input-field {
+    min-height: 2.5rem;
+    height: auto;
+    resize: vertical;
+    overflow-y: auto;
+    line-height: 1.4rem;
+}
+
+select.input-field {
+    appearance: none;
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='%236b7280' d='M0 0l5 6 5-6H0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 0.65rem;
+    padding-right: 2rem;
+}
+
+.input-checkbox {
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid #9ca3af;
+    border-radius: 0.125rem;
+    accent-color: #2563eb;
+    cursor: pointer;
+}
+
+.login-page .input-field {
+    height: 2.75rem;
+    font-size: 0.95rem;
+    padding: 0.75rem 0.75rem;
+}
+
+.input-field.with-icon {
+    padding-left: 2.5rem !important;
+}

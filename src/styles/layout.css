@@ -1,0 +1,10 @@
+/**
+ * src/styles/layout.css
+ * Layout-level helpers and primitives.
+ */
+
+.scroll-area::after {
+    content: "";
+    display: block;
+    height: 0.75rem;
+}

@@ -1,0 +1,84 @@
+/**
+ * src/styles/buttons.css
+ * Reusable button styles (primary/secondary/disabled).
+ */
+
+.btn-primary,
+.btn-secondary,
+.btn-disabled {
+    font-size: 0.85rem;
+    font-weight: 600;
+    height: 2.25rem;
+    line-height: 1.25rem;
+    padding: 0 1rem;
+    border-radius: 0.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primary {
+    background-color: #0066a1;
+    color: #ffffff;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #004f7c;
+    border: 1px solid #ffffff;
+    border-radius: 0.2rem;
+    box-shadow: inset 0 0 0 1px #ffffff;
+    color: #ffffff;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: #1f2937;
+    border: 1px solid #9ca3af;
+}
+
+.btn-secondary:hover {
+    background-color: #e5e7eb;
+    color: #111827;
+    border-color: #9ca3af;
+    border-radius: 0.2rem;
+}
+
+.btn-primary:focus,
+.btn-secondary:focus {
+    outline: 2px solid #80bfff;
+    outline-offset: 2px;
+}
+
+.btn-lg {
+    height: 2.75rem;
+    font-size: 0.95rem;
+    padding: 0 1.25rem;
+}
+
+.login-page .btn-primary,
+.login-page .btn-secondary {
+    height: 2.75rem;
+    font-size: 0.95rem;
+    padding: 0 1.25rem;
+}
+
+.btn-disabled {
+    background-color: #9ca3af;
+    color: #f9fafb;
+    border: none;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.btn-disabled:hover,
+.btn-disabled:focus {
+    background-color: #9ca3af;
+    border-radius: 0.2rem;
+    color: #f9fafb;
+    border: none;
+    box-shadow: none;
+    outline: none;
+}
