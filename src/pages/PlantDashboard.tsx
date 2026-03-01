@@ -25,15 +25,17 @@ const chartOptions = {
     }
 };
 
-const top5Data = {
+const getTop5Data = () => ({
     labels: ["P11-Area", "tess", "Line A", "Line B", "Line C"],
     datasets: [{
         label: "Availability %",
         data: [60, 40, 85, 70, 90],
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         backgroundColor: (context: any) => {
-            const ctx = context.chart.ctx;
-            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            const chart = context.chart;
+            const ctx = chart.ctx;
+            if (!chart.chartArea) return "#0066A1";
+            const gradient = ctx.createLinearGradient(0, chart.chartArea.top, 0, chart.chartArea.bottom);
             gradient.addColorStop(0, "#0066A1"); // Bosch Blue
             gradient.addColorStop(1, "#60A5FA"); // Light Blue
             return gradient;
@@ -41,9 +43,9 @@ const top5Data = {
         borderRadius: 4,
         barPercentage: 0.5,
     }],
-};
+});
 
-const waveData = {
+const getWaveData = () => ({
     labels: ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "24:00"],
     datasets: [{
         label: "Trend",
@@ -53,7 +55,7 @@ const waveData = {
         borderColor: "#0066A1",
         tension: 0.4,
     }]
-};
+});
 
 const AVAILABLE_OPT_GRAPHS = [
     { id: "oee", title: "OEE Trend", type: "wave", icon: <Activity size={18} /> },
@@ -190,9 +192,9 @@ const PlantDashboard: React.FC = () => {
 
                                         <div className="h-64 w-full">
                                             {gDef.type === "wave" ? (
-                                                <Line data={waveData} options={chartOptions} />
+                                                <Line data={getWaveData()} options={chartOptions} />
                                             ) : (
-                                                <Bar data={top5Data} options={chartOptions} />
+                                                <Bar data={getTop5Data()} options={chartOptions} />
                                             )}
                                         </div>
                                     </div>
@@ -211,7 +213,6 @@ const PlantDashboard: React.FC = () => {
                                 </div>
                             )}
                         </div>
-
                     </div>
 
                     {/* Right Side: Summary Column (Spans 1 col) */}
@@ -267,9 +268,7 @@ const PlantDashboard: React.FC = () => {
                             </div>
                         </div>
                     </div>
-
                 </div>
-
             </div>
 
             {/* --- ADD CHART MODAL --- */}
@@ -294,7 +293,7 @@ const PlantDashboard: React.FC = () => {
                                             key={graph.id}
                                             onClick={() => !isAlreadyAdded && setSelectedGraphId(graph.id)}
                                             className={`bg-white rounded-lg border-2 p-4 h-[120px] relative flex flex-col justify-between transition-all duration-200 
-                                                ${isAlreadyAdded ? 'opacity-50 cursor-not-allowed border-gray-200' :
+                                        ${isAlreadyAdded ? 'opacity-50 cursor-not-allowed border-gray-200' :
                                                     isSelected ? 'border-[#0066A1] shadow-md bg-blue-50/20 cursor-pointer' :
                                                         'border-gray-100 hover:border-blue-300 cursor-pointer shadow-sm'}`}
                                         >
