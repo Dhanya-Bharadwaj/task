@@ -41,9 +41,7 @@ const Sidebar: React.FC = () => {
 
     const navItems = useMemo(() => {
         if (isConfigRoute) {
-            return [
-                { name: "Back to Home", path: "/landing", icon: <LayoutDashboard size={22} /> }
-            ];
+            return [];
         }
 
         const enterpriseChildren: NavItem[] = [];
