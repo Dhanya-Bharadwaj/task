@@ -3,7 +3,7 @@
  * Machine Dashboard — circular gauges, smiley status, downtime alerts, summary table.
  * Inspired by BPV requirements specification screenshots.
  */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import MainLayout from "../layout/MainLayout";
 import KpiCard from "../components/KpiCard";
 import {
@@ -139,27 +139,7 @@ const SmileyStatus: React.FC<{ status: string; size?: number }> = ({ status, siz
     );
 };
 
-/* ─── Downtime Alert Card ─── */
-const DowntimeAlert: React.FC<{ d: { reason: string; start: string; end: string; dur: number } }> = ({ d }) => (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-red-200 bg-red-50"
-        style={{ animation: "slideUp 0.4s ease both", boxShadow: "0 2px 10px rgba(220,38,38,0.1)" }}>
-        <div className="flex-shrink-0">
-            <SmileyStatus status="stopped" size={40} />
-        </div>
-        <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold text-red-700">{d.reason}</div>
-            <div className="flex items-center gap-1 text-xs text-red-500 mt-0.5">
-                <Clock size={11} />
-                <span>{d.start} – {d.end}</span>
-                <span className="mx-1 text-red-300">·</span>
-                <span>{d.dur} min</span>
-            </div>
-        </div>
-        <div className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full border border-red-200 flex-shrink-0">
-            Unplanned
-        </div>
-    </div>
-);
+
 
 /* ─── Machine Card with circular gauges ─── */
 const MachineCard: React.FC<{ m: typeof machines[0]; selected: boolean; onClick: () => void; delay: number }> = ({
@@ -296,10 +276,10 @@ const MachineDashboard: React.FC = () => {
 
                 {/* ── KPI Summary Cards ── */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 animate-fadeIn-d1">
-                    <KpiCard label="Avg OEE" value={parseFloat((machines.filter(m => m.oee > 0).reduce((a, m) => a + m.oee, 0) / machines.filter(m => m.oee > 0).length).toFixed(1))} unit="%" icon={<Activity size={18} />} gradient="linear-gradient(135deg,#0066a1,#0284c7)" sub="Active machines" delay={0} target={100} />
-                    <KpiCard label="Machines Running" value={runningCount} unit={` / ${machines.length}`} icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg,#22c55e,#16a34a)" sub={`${stoppedCount} stopped`} delay={60} />
-                    <KpiCard label="Total Downtime" value={allDowntime.reduce((a, d) => a + d.dur, 0)} unit=" min" icon={<Wrench size={18} />} gradient="linear-gradient(135deg,#ef4444,#dc2626)" sub="Unplanned this shift" delay={120} />
-                    <KpiCard label="Active Lines" value={3} unit="" icon={<Cpu size={18} />} gradient="linear-gradient(135deg,#8b5cf6,#6d28d9)" sub="Line A, B, C" delay={180} />
+                    <KpiCard label="Avg OEE" value={parseFloat((machines.filter(m => m.oee > 0).reduce((a, m) => a + m.oee, 0) / machines.filter(m => m.oee > 0).length).toFixed(1))} unit="%" icon={<Activity size={18} />} sub="Active machines" delay={0} target={100} />
+                    <KpiCard label="Machines Running" value={runningCount} unit={` / ${machines.length}`} icon={<CheckCircle size={18} />} sub={`${stoppedCount} stopped`} delay={60} />
+                    <KpiCard label="Total Downtime" value={allDowntime.reduce((a, d) => a + d.dur, 0)} unit=" min" icon={<Wrench size={18} />} sub="Unplanned this shift" delay={120} />
+                    <KpiCard label="Active Lines" value={3} unit="" icon={<Cpu size={18} />} sub="Line A, B, C" delay={180} />
                 </div>
 
                 {/* ── Downtime Alerts ── */}

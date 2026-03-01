@@ -4,12 +4,11 @@
  * RS-08 Reasons (Planned/Unplanned/Defects) · RS-15-001 Line OEE
  */
 import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useHierarchy } from "../context/HierarchyContext";
 import MainLayout from "../layout/MainLayout";
 import toast from "react-hot-toast";
-import {
-    Save, PlusCircle, Trash2, ChevronRight, ChevronDown,
-    Clock, Tag, AlertTriangle, Settings2, GitBranch,
-} from "lucide-react";
+import { Save, PlusCircle, Trash2, ChevronRight, ChevronDown, Settings2, X } from "lucide-react";
 
 /* ─── Types ─── */
 type LineConfig = { id: string; name: string; shiftDuration: number; stdCycleTime: number; targetOEE: number; oeeMode: "last" | "simple"; active: boolean };
@@ -47,16 +46,7 @@ const initialProductTypes: ProductType[] = [
     { id: 3, name: "Type C", desc: "Compact model — 60mm bore" },
 ];
 
-/* ─── Tab definitions ─── */
-const TABS = [
-    { id: "hierarchy", label: "Hierarchy", icon: <GitBranch size={14} /> },
-    { id: "lines", label: "Lines & Stations", icon: <Settings2 size={14} /> },
-    { id: "shifts", label: "Shifts", icon: <Clock size={14} /> },
-    { id: "reasons", label: "Reasons", icon: <AlertTriangle size={14} /> },
-    { id: "products", label: "Product Types", icon: <Tag size={14} /> },
-    { id: "general", label: "General", icon: <Settings2 size={14} /> },
-] as const;
-type TabId = typeof TABS[number]["id"];
+type TabId = "hierarchy" | "lines" | "shifts" | "reasons" | "products" | "general";
 
 /* ─── Reason sub-tabs ─── */
 const REASON_CATS = ["planned", "unplanned", "defect"] as const;
@@ -66,7 +56,8 @@ const catColor: Record<ReasonCat, string> = { planned: "text-blue-700 bg-blue-50
 
 /* ─── Main Component ─── */
 const Configuration: React.FC = () => {
-    const [tab, setTab] = useState<TabId>("hierarchy");
+    const [searchParams] = useSearchParams();
+    const tab = (searchParams.get("tab") as TabId) || "hierarchy";
     const [lines, setLines] = useState(initialLines);
     const [shiftMasters, setShiftMasters] = useState(initialShiftMasters);
     const [shiftGroups, setShiftGroups] = useState(initialShiftGroups);
@@ -80,21 +71,82 @@ const Configuration: React.FC = () => {
     const [editProductId, setEditProductId] = useState<number | null>(null);
     const [editProductDesc, setEditProductDesc] = useState("");
 
-    /* ─────────────────────────────── HIERARCHY TREE (RS-03-001) ──────────────── */
-    const hierarchyTree = [
-        { level: 0, name: "Plant — Bosch Coimbatore", type: "Plant" },
-        { level: 1, name: "Shop Floor A", type: "Production Area" },
-        { level: 2, name: "Line A", type: "Line" },
-        { level: 3, name: "Station 01 — Welding", type: "Workstation" },
-        { level: 3, name: "Station 02 — Assembly", type: "Workstation" },
-        { level: 3, name: "Station 03 — Painting", type: "Workstation" },
-        { level: 2, name: "Line B", type: "Line" },
-        { level: 3, name: "Station 04 — Testing", type: "Workstation" },
-        { level: 3, name: "Station 05 — Packing", type: "Workstation" },
-        { level: 1, name: "Shop Floor B", type: "Production Area" },
-        { level: 2, name: "Line C", type: "Line" },
-        { level: 3, name: "Station 06 — Dispatch", type: "Workstation" },
-    ];
+    const { hierarchy: hierarchyTree, setHierarchy: setHierarchyTree } = useHierarchy();
+
+    // Modal states for Hierarchy RS-03-001
+    const [isHierarchyModalOpen, setIsHierarchyModalOpen] = useState(false);
+    const [editingNode, setEditingNode] = useState<any>(null); // For edit mode
+    const [hForm, setHForm] = useState({ name: "", type: "Plant", level: 0, index: -1 });
+
+    const openAddHierarchy = (parentIndex?: number, parentLevel?: number) => {
+        setEditingNode(null);
+        if (parentIndex !== undefined && parentLevel !== undefined) {
+            setHForm({ name: "", type: _getDefaultType(parentLevel + 1), level: parentLevel + 1, index: parentIndex + 1 });
+        } else {
+            setHForm({ name: "", type: "Plant", level: 0, index: hierarchyTree.length });
+        }
+        setIsHierarchyModalOpen(true);
+    };
+
+    const openEditHierarchy = (node: any, index: number) => {
+        setEditingNode(node);
+        setHForm({ name: node.name, type: node.type, level: node.level, index });
+        setIsHierarchyModalOpen(true);
+    };
+
+    const _getDefaultType = (level: number) => {
+        if (level === 0) return "Plant";
+        if (level === 1) return "Production Area";
+        if (level === 2) return "Line";
+        return "Workstation";
+    };
+
+    const saveHierarchyNode = () => {
+        if (!hForm.name.trim()) return toast.error("Name is required.");
+
+        const newTree = [...hierarchyTree];
+        if (editingNode) {
+            // Edit existing
+            const idx = newTree.findIndex(n => n.id === editingNode.id);
+            if (idx > -1) {
+                newTree[idx] = { ...newTree[idx], name: hForm.name, type: hForm.type };
+            }
+            toast.success("Hierarchy updated.");
+        } else {
+            // Add new
+            const newNode = {
+                id: Date.now().toString(),
+                level: hForm.level,
+                name: hForm.name,
+                type: hForm.type
+            };
+            // Insert at specified index
+            newTree.splice(hForm.index, 0, newNode);
+            toast.success("Hierarchy node added.");
+        }
+        setHierarchyTree(newTree);
+        setIsHierarchyModalOpen(false);
+    };
+
+    const handleDeleteNode = (id: string, name: string) => {
+        if (window.confirm(`Are you sure you want to delete "${name}" and all its children?`)) {
+            // Delete the node and all its children
+            const startIndex = hierarchyTree.findIndex(n => n.id === id);
+            if (startIndex === -1) return;
+
+            const levelToDelete = hierarchyTree[startIndex].level;
+            let endIndex = startIndex + 1;
+            while (endIndex < hierarchyTree.length && hierarchyTree[endIndex].level > levelToDelete) {
+                endIndex++;
+            }
+
+            setHierarchyTree(prev => [
+                ...prev.slice(0, startIndex),
+                ...prev.slice(endIndex)
+            ]);
+            toast.success(`${name} deleted.`);
+        }
+    };
 
     return (
         <MainLayout>
@@ -112,39 +164,56 @@ const Configuration: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Tab Bar */}
-                <div className="flex gap-1 flex-wrap">
-                    {TABS.map((t) => (
-                        <button key={t.id} onClick={() => setTab(t.id)}
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
-                            style={{
-                                background: tab === t.id ? "#0066a1" : "#f8fafc",
-                                color: tab === t.id ? "#fff" : "#64748b",
-                                border: tab === t.id ? "1px solid #0066a1" : "1px solid #e2e8f0",
-                            }}>
-                            {t.icon}{t.label}
-                        </button>
-                    ))}
-                </div>
+                {/* Tabs are now driven by the Sidebar when in configuration mode */}
 
                 {/* ── Hierarchy (RS-03-001) ── */}
                 {tab === "hierarchy" && (
-                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 animate-fadeIn">
-                        <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-sm font-bold text-gray-700">Hierarchy Structure (RS-03-001)</h4>
-                            <button className="btn-secondary flex items-center gap-1.5 text-xs" onClick={() => toast.success("Hierarchy editor opened (UI only)")}>
-                                <PlusCircle size={13} /> Add Area
+                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 animate-fadeIn">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h4 className="text-base font-bold text-gray-800">Hierarchy Management</h4>
+                                <p className="text-xs text-gray-500 mt-1">Configure your enterprise plant structure. Parent-child relationships govern access and visualizer drill-downs.</p>
+                            </div>
+                            <button className="btn-primary flex items-center gap-2 text-sm shadow-md" onClick={() => openAddHierarchy()}>
+                                <PlusCircle size={16} /> New Root Plant
                             </button>
                         </div>
-                        <p className="text-xs text-gray-400 mb-4">Name is a mandatory field. Hierarchy: Plant → Production Area → Line → Workstation.</p>
-                        <div className="space-y-1">
+
+                        <div className="bg-gray-50/50 rounded-lg border border-gray-100 p-2 space-y-1">
+                            {hierarchyTree.length === 0 && (
+                                <div className="p-8 text-center text-gray-400 text-sm italic">
+                                    No hierarchy nodes exist. Add a new plant to get started.
+                                </div>
+                            )}
                             {hierarchyTree.map((node, i) => (
-                                <div key={i} className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors"
-                                    style={{ paddingLeft: `${(node.level * 24) + 12}px`, animation: `slideUp 0.3s ease ${i * 30}ms both` }}>
-                                    {node.level < 3 ? <ChevronDown size={14} className="text-gray-400 flex-shrink-0" /> : <ChevronRight size={14} className="text-gray-300 flex-shrink-0" />}
-                                    <span className={`text-xs font-semibold ${node.level === 0 ? "text-[#0066a1]" : node.level === 1 ? "text-purple-700" : node.level === 2 ? "text-green-700" : "text-gray-700"}`}>{node.name}</span>
-                                    <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full ml-auto">{node.type}</span>
-                                    <button className="text-gray-400 hover:text-red-500 transition-colors ml-1" onClick={() => toast("Edit hierarchy (UI only)")}><Settings2 size={13} /></button>
+                                <div key={node.id} className="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 transition-all group"
+                                    style={{ paddingLeft: `${(node.level * 32) + 16}px`, animation: `slideUp 0.3s ease ${i * 20}ms both` }}>
+
+                                    {node.level < 3 ? <ChevronDown size={15} className="text-blue-500 flex-shrink-0" /> : <ChevronRight size={15} className="text-gray-300 flex-shrink-0" />}
+
+                                    <div className="flex flex-col flex-1">
+                                        <span className={`text-sm font-semibold tracking-wide ${node.level === 0 ? "text-[#0066a1]" : node.level === 1 ? "text-purple-700" : node.level === 2 ? "text-emerald-700" : "text-gray-700"}`}>
+                                            {node.name}
+                                        </span>
+                                    </div>
+
+                                    <span className="text-[10px] uppercase tracking-wider font-semibold border border-gray-200 bg-gray-50 text-gray-500 px-2 py-0.5 rounded ml-auto">
+                                        {node.type}
+                                    </span>
+
+                                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
+                                        {node.level < 3 && (
+                                            <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded shadow-sm border border-transparent hover:border-blue-100 transition-all" title="Add Child" onClick={() => openAddHierarchy(i, node.level)}>
+                                                <PlusCircle size={14} />
+                                            </button>
+                                        )}
+                                        <button className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded shadow-sm border border-transparent hover:border-gray-200 transition-all" title="Edit" onClick={() => openEditHierarchy(node, i)}>
+                                            <Settings2 size={14} />
+                                        </button>
+                                        <button className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded shadow-sm border border-transparent hover:border-red-100 transition-all" title="Delete" onClick={() => handleDeleteNode(node.id, node.name)}>
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -540,6 +609,86 @@ const Configuration: React.FC = () => {
                 )}
 
             </div>
+            {/* Hierarchy Modal */}
+            {isHierarchyModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fadeIn">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-200">
+                        {/* Modal Header */}
+                        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between" style={{ background: "linear-gradient(90deg, #0066a1 0%, #00a0dc 100%)" }}>
+                            <h3 className="font-bold text-white tracking-wide">
+                                {editingNode ? "Edit Hierarchy Node" : "Add Hierarchy Node"}
+                            </h3>
+                            <button onClick={() => setIsHierarchyModalOpen(false)} className="text-blue-100 hover:text-white transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 space-y-5">
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Node Name <span className="text-red-500">*</span></label>
+                                <input
+                                    type="text"
+                                    value={hForm.name}
+                                    onChange={(e) => setHForm({ ...hForm, name: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm"
+                                    placeholder="e.g. Assembly Line A"
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Hierarchy Level</label>
+                                    <select
+                                        value={hForm.level}
+                                        onChange={(e) => setHForm({ ...hForm, level: parseInt(e.target.value) })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none shadow-sm disabled:bg-gray-100 disabled:text-gray-500"
+                                        disabled={!!editingNode} // Can't easily change level of existing node in simple UI without messing up tree
+                                    >
+                                        <option value={0}>0 — Root Plant</option>
+                                        <option value={1}>1 — Production Area</option>
+                                        <option value={2}>2 — Line</option>
+                                        <option value={3}>3 — Workstation</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Designation</label>
+                                    <select
+                                        value={hForm.type}
+                                        onChange={(e) => setHForm({ ...hForm, type: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none shadow-sm"
+                                    >
+                                        <option value="Plant">Plant</option>
+                                        <option value="Production Area">Production Area</option>
+                                        <option value="Line">Line</option>
+                                        <option value="Workstation">Workstation</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="bg-blue-50 border border-blue-100 p-3 rounded-lg text-xs leading-relaxed text-blue-800">
+                                <strong>Tip:</strong> Typical Bosch nomenclature expects Plant (Site) &rarr; Production Area (Shopfloor) &rarr; Line / Cell &rarr; Workstation.
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end gap-3">
+                            <button
+                                onClick={() => setIsHierarchyModalOpen(false)}
+                                className="px-5 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg shadow-sm transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={saveHierarchyNode}
+                                className="px-5 py-2 text-sm font-semibold text-white bg-[#0066a1] hover:bg-blue-700 rounded-lg shadow-md transition-all flex items-center gap-2"
+                            >
+                                <Save size={16} /> {editingNode ? "Save Structure" : "Add to Hierarchy"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </MainLayout>
     );
 };

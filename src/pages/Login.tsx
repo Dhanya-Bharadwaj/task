@@ -62,7 +62,7 @@ const Login: React.FC = () => {
             await auth.signIn(u, password);
 
             toast.success("Login successful!");
-            navigate("/dashboard", { replace: true });
+            navigate("/landing", { replace: true });
         } catch (err) {
             // Keep message user-friendly; log details for developers.
             console.error("Login failed:", err);

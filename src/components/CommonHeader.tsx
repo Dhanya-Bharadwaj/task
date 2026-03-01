@@ -2,32 +2,14 @@
  * src/components/CommonHeader.tsx
  * BPV animated header with live clock and notification badge.
  */
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useAuth } from "../auth/useAuth";
-import { Clock, Bell, Wifi } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const CommonHeader: React.FC = () => {
     const auth = useAuth();
-    const [time, setTime] = useState(new Date());
-    const [ping, setPing] = useState(false);
-
-    /* Live clock */
-    useEffect(() => {
-        const t = setInterval(() => setTime(new Date()), 1000);
-        return () => clearInterval(t);
-    }, []);
-
-    /* Notification ping every 90s */
-    useEffect(() => {
-        const p = setInterval(() => {
-            setPing(true);
-            setTimeout(() => setPing(false), 2500);
-        }, 90000);
-        return () => clearInterval(p);
-    }, []);
-
-    const hhmm = time.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-    const date = time.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    const navigate = useNavigate();
 
     return (
         <>
@@ -54,32 +36,17 @@ const CommonHeader: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Right: Status + Clock + Welcome + Logo */}
+                {/* Right: Welcome + Logo */}
                 <div className="flex items-center gap-5">
 
-                    {/* Live indicator */}
-                    <div className="hidden md:flex items-center gap-1.5">
-                        <span className="andon-pulse-green w-2 h-2 rounded-full bg-green-500 inline-block" />
-                        <span className="text-xs text-gray-400 font-medium">Live</span>
-                        <Wifi size={12} className="text-green-500 ml-0.5" />
-                    </div>
-
-                    {/* Clock */}
-                    <div className="hidden md:flex items-center gap-1.5 bg-gray-50 border border-gray-100 rounded-lg px-3 py-1">
-                        <Clock size={13} className="text-[#0066a1]" />
-                        <div className="text-right">
-                            <div className="text-xs font-bold text-gray-700 tabular-nums leading-none">{hhmm}</div>
-                            <div className="text-[9px] text-gray-400 leading-none mt-0.5">{date}</div>
-                        </div>
-                    </div>
-
-                    {/* Notification bell */}
-                    <div className="relative cursor-pointer group">
-                        <Bell size={18} className="text-gray-500 group-hover:text-[#0066a1] transition-colors" />
-                        {ping && (
-                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-heartbeat" />
-                        )}
-                    </div>
+                    {/* Modules Menu */}
+                    <button
+                        onClick={() => navigate("/landing")}
+                        className="relative cursor-pointer group flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                        title="Go to Modules"
+                    >
+                        <LayoutGrid size={20} className="text-gray-500 group-hover:text-[#0066a1] transition-colors" />
+                    </button>
 
                     {/* Welcome */}
                     {auth?.user && (

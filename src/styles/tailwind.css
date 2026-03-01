@@ -1,3 +1,14 @@
+/**
+ * src/styles/tailwind.css
+ * -----------------------------------------------------------------------------
+ * Responsibility:
+ * - Hosts Tailwind directives only.
+ *
+ * NOTE:
+ * - Keep this file minimal.
+ * - All custom CSS lives in the other modular files.
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

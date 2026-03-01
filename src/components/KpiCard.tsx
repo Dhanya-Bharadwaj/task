@@ -10,7 +10,6 @@ type Props = {
     unit?: string;
     prefix?: string;
     icon: React.ReactNode;
-    gradient: string;       // e.g. "linear-gradient(135deg,#0066a1,#00a0dc)"
     sub?: string;
     subColor?: string;
     delay?: number;         // ms delay for stagger
@@ -48,7 +47,7 @@ function useCountUp(target: number, duration = 900, delay = 0) {
 }
 
 const KpiCard: React.FC<Props> = ({
-    label, value, unit, prefix, icon, gradient, sub, subColor, delay = 0, target, targetLabel,
+    label, value, unit, prefix, icon, sub, subColor, delay = 0, target, targetLabel,
 }) => {
     const displayVal = useCountUp(value, 900, delay);
 
@@ -62,9 +61,8 @@ const KpiCard: React.FC<Props> = ({
         >
             <div className="flex items-start justify-between">
                 {/* Icon */}
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: gradient, boxShadow: `0 4px 12px rgba(0,0,0,0.18)` }}>
-                    <div className="text-white">{icon}</div>
+                <div className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-50 border border-gray-100">
+                    <div className="text-[#0066A1]">{icon}</div>
                 </div>
 
                 {/* Value */}
@@ -88,8 +86,8 @@ const KpiCard: React.FC<Props> = ({
                     <div className="mt-1.5">
                         <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
                             <div
-                                className="h-full rounded-full animate-progress"
-                                style={{ width: `${Math.min((value / target) * 100, 100)}%`, background: gradient }}
+                                className="h-full rounded-full animate-progress bg-[#0066A1]"
+                                style={{ width: `${Math.min((value / target) * 100, 100)}%` }}
                             />
                         </div>
                         {targetLabel && (

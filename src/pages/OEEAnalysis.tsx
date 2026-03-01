@@ -111,10 +111,10 @@ const OEEAnalysis: React.FC = () => {
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    <KpiCard label="OEE" value={82.4} unit="%" icon={<Star size={18} />} gradient="linear-gradient(135deg,#0066a1,#0284c7)" sub="Target: 85%" delay={0} target={100} />
-                    <KpiCard label="Availability" value={91.2} unit="%" icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg,#22c55e,#16a34a)" sub="Target: 90%" delay={60} target={100} />
-                    <KpiCard label="Performance" value={88.5} unit="%" icon={<Zap size={18} />} gradient="linear-gradient(135deg,#8b5cf6,#6d28d9)" sub="Target: 90%" delay={120} target={100} />
-                    <KpiCard label="Quality" value={97.8} unit="%" icon={<Activity size={18} />} gradient="linear-gradient(135deg,#f97316,#ea580c)" sub="Defects: 8 pcs" delay={180} target={100} />
+                    <KpiCard label="OEE" value={82.4} unit="%" icon={<Star size={18} />} sub="Target: 85%" delay={0} target={100} />
+                    <KpiCard label="Availability" value={91.2} unit="%" icon={<CheckCircle size={18} />} sub="Target: 90%" delay={60} target={100} />
+                    <KpiCard label="Performance" value={88.5} unit="%" icon={<Zap size={18} />} sub="Target: 90%" delay={120} target={100} />
+                    <KpiCard label="Quality" value={97.8} unit="%" icon={<Activity size={18} />} sub="Defects: 8 pcs" delay={180} target={100} />
                 </div>
 
                 {/* Charts Row 1 */}

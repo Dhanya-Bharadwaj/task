@@ -1,8 +1,18 @@
 /**
  * src/styles/base.css
- * Global resets and typography defaults.
+ * -----------------------------------------------------------------------------
+ * Responsibility:
+ * - Global resets and typography defaults.
+ * - Base element styling (html/body, links, headings).
+ *
+ * Design notes:
+ * - Avoid component-specific styling here.
+ * - Keep this as your "foundation" layer.
  */
 
+/* ---------------------------------------------------------------------------
+   App Base Resets
+--------------------------------------------------------------------------- */
 html,
 body,
 #root {
@@ -12,6 +22,7 @@ body,
     padding: 0;
 }
 
+/* Remove unwanted flex-centering that Vite defaults sometimes introduce */
 body {
     display: block;
     font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -23,8 +34,12 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* ---------------------------------------------------------------------------
+   Links & text defaults
+--------------------------------------------------------------------------- */
 a {
     color: #1d4ed8;
+    /* Tailwind blue-700 */
     text-decoration: none;
 }
 
@@ -32,12 +47,18 @@ a:hover {
     text-decoration: underline;
 }
 
+/* ---------------------------------------------------------------------------
+   Default button behavior
+--------------------------------------------------------------------------- */
 button {
     font-family: inherit;
     cursor: pointer;
     border: none;
 }
 
+/* ---------------------------------------------------------------------------
+   Headings
+--------------------------------------------------------------------------- */
 h1,
 h2,
 h3,
@@ -48,6 +69,10 @@ h6 {
     font-weight: 600;
 }
 
+/**
+ * Shared page title style
+ * Usage: <h2 className="page-title">...</h2>
+ */
 .page-title {
     @apply text-2xl text-gray-800 font-normal;
     margin-top: 0px;

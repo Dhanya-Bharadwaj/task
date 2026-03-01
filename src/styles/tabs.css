@@ -1,15 +1,64 @@
 /**
  * src/styles/tabs.css
+ * -----------------------------------------------------------------------------
+ * Responsibility:
+ * - Tab control styles shared across tabbed pages.
  */
 
+/* Tab header bar */
+.tab-header-bar {
+    @apply flex border-b border-gray-300 bg-gray-50;
+}
+
+/* Base tab */
+.tab-button {
+    @apply text-sm font-medium text-gray-900 transition-all duration-150;
+    @apply px-6 py-2;
+    border-bottom: 3px solid transparent;
+    color: #111827;
+}
+
+/* Hover: subtle background + bold */
+.tab-button:hover {
+    font-weight: 600;
+    background-color: #f3f4f6;
+}
+
+/* Active: Bosch underline */
+.tab-button.active {
+    color: #0066a1;
+    border-bottom: 3px solid #0e8cd4;
+    background-color: #ffffff;
+    font-weight: 600;
+}
+
+/* Content area */
+.tab-content-area {
+    @apply p-4 bg-white;
+}
+
+/* ---------------------------------------------------------------------------
+   Legacy aliases (backward-compatible)
+--------------------------------------------------------------------------- */
 .tab-bar {
-    @apply flex border-b border-gray-200 mb-4;
+    @apply flex border-b border-gray-300 bg-gray-50;
 }
 
 .tab-item {
-    @apply px-4 py-2 text-sm font-medium text-gray-500 cursor-pointer border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 transition-all;
+    @apply text-sm font-medium text-gray-900 transition-all duration-150;
+    @apply px-6 py-2;
+    border-bottom: 3px solid transparent;
+    color: #111827;
+}
+
+.tab-item:hover {
+    font-weight: 600;
+    background-color: #f3f4f6;
 }
 
 .tab-item.active {
-    @apply text-[#0066a1] border-[#0066a1];
+    color: #0066a1;
+    border-bottom: 3px solid #0e8cd4;
+    background-color: #ffffff;
+    font-weight: 600;
 }

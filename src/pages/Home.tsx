@@ -260,12 +260,12 @@ const Home: React.FC = () => {
 
                     {/* KPI Cards */}
                     <div className="col-span-12 md:col-span-9 grid grid-cols-2 lg:grid-cols-3 gap-3">
-                        <KpiCard label="Availability" value={info.availability} unit="%" icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg,#22c55e,#16a34a)" sub="Target: 90%" delay={50} target={100} targetLabel="vs 100%" />
-                        <KpiCard label="Performance" value={info.performance} unit="%" icon={<TrendingUp size={18} />} gradient="linear-gradient(135deg,#8b5cf6,#6d28d9)" sub="Target: 90%" delay={100} target={100} />
-                        <KpiCard label="Quality Rate" value={info.quality} unit="%" icon={<Package size={18} />} gradient="linear-gradient(135deg,#f97316,#ea580c)" sub={`Defects: ${info.defects} pcs`} delay={150} target={100} />
-                        <KpiCard label="Total Output" value={info.actual} unit=" pcs" icon={<Activity size={18} />} gradient="linear-gradient(135deg,#0066a1,#0284c7)" sub={`Target: ${info.target}`} delay={200} target={info.target} targetLabel={`${((info.actual / info.target) * 100).toFixed(1)}% achieved`} />
-                        <KpiCard label="Total Downtime" value={info.downtime} unit=" min" icon={<Wrench size={18} />} gradient="linear-gradient(135deg,#f59e0b,#d97706)" sub="Unplanned losses" delay={250} />
-                        <KpiCard label={view === "shift" ? "Elapsed (min)" : "Shift Duration"} value={info.elapsed} unit=" min" icon={<Clock size={18} />} gradient="linear-gradient(135deg,#6366f1,#4f46e5)" sub={view === "shift" ? "Shift: 480 min" : "Day: 960 min"} delay={300} target={view === "shift" ? 480 : 960} targetLabel="Time progress" />
+                        <KpiCard label="Availability" value={info.availability} unit="%" icon={<CheckCircle size={18} />} sub="Target: 90%" delay={50} target={100} targetLabel="vs 100%" />
+                        <KpiCard label="Performance" value={info.performance} unit="%" icon={<TrendingUp size={18} />} sub="Target: 90%" delay={100} target={100} />
+                        <KpiCard label="Quality Rate" value={info.quality} unit="%" icon={<Package size={18} />} sub={`Defects: ${info.defects} pcs`} delay={150} target={100} />
+                        <KpiCard label="Total Output" value={info.actual} unit=" pcs" icon={<Activity size={18} />} sub={`Target: ${info.target}`} delay={200} target={info.target} targetLabel={`${((info.actual / info.target) * 100).toFixed(1)}% achieved`} />
+                        <KpiCard label="Total Downtime" value={info.downtime} unit=" min" icon={<Wrench size={18} />} sub="Unplanned losses" delay={250} />
+                        <KpiCard label={view === "shift" ? "Elapsed (min)" : "Shift Duration"} value={info.elapsed} unit=" min" icon={<Clock size={18} />} sub={view === "shift" ? "Shift: 480 min" : "Day: 960 min"} delay={300} target={view === "shift" ? 480 : 960} targetLabel="Time progress" />
                     </div>
                 </div>
 

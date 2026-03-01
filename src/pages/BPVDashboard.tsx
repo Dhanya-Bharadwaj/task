@@ -8,7 +8,7 @@ import MainLayout from "../layout/MainLayout";
 import {
     LayoutDashboard, Monitor, Cpu, BarChart3, Activity,
     AlertTriangle, FileText, Settings, Users, Wrench,
-    Info, Clock, TrendingUp, ChevronRight,
+    Info, Clock, TrendingUp,
 } from "lucide-react";
 
 /* ─── Live stats ticker ─── */
@@ -191,94 +191,60 @@ const TileCard: React.FC<{ tile: Tile; delay: number }> = ({ tile, delay }) => {
             onClick={() => navigate(tile.path)}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
-            className="group relative flex flex-col gap-3 rounded-2xl text-left overflow-hidden cursor-pointer border border-transparent"
+            className="group relative flex flex-col gap-3 rounded-md text-left overflow-hidden cursor-pointer"
             style={{
-                padding: "1.5rem",
-                background: hovered
-                    ? `linear-gradient(135deg, ${tile.color} 0%, ${tile.colorEnd} 100%)`
-                    : "#ffffff",
-                borderColor: hovered ? "transparent" : "#f1f5f9",
-                boxShadow: hovered
-                    ? `0 12px 40px rgba(${hexToRgb(tile.color)},${tile.glowAlpha}), 0 2px 8px rgba(0,0,0,0.08)`
-                    : "0 1px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-                transform: mounted
-                    ? hovered ? "translateY(-4px) scale(1.015)" : "translateY(0) scale(1)"
-                    : "translateY(20px)",
+                padding: "1.25rem",
+                backgroundColor: hovered ? "#f8fafc" : "#ffffff",
+                border: "1px solid",
+                borderColor: hovered ? "#cbd5e1" : "#e2e8f0",
+                transform: mounted ? "translateY(0)" : "translateY(10px)",
                 opacity: mounted ? 1 : 0,
-                transition: "all 0.35s cubic-bezier(0.34,1.56,0.64,1)",
+                transition: "all 0.2s ease",
             }}
         >
-            {/* Background pattern (only on hover) */}
-            {hovered && (
-                <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
-                    <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
-                    <div className="absolute -right-2 -bottom-8 w-20 h-20 rounded-full bg-white/8" />
-                </div>
-            )}
-
             {/* LIVE tag */}
             {tile.tag && (
                 <div className="absolute top-3 right-3">
-                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md animate-blink ${hovered ? "bg-white/20 text-white" : "bg-green-100 text-green-700"
-                        }`}>{tile.tag}</span>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded text-red-600 bg-red-50 border border-red-200 animate-blink">
+                        {tile.tag}
+                    </span>
                 </div>
             )}
 
-            {/* Icon box */}
+            {/* Icon */}
             <div
-                className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300"
+                className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0 transition-colors duration-200"
                 style={{
-                    background: hovered
-                        ? "rgba(255,255,255,0.2)"
-                        : `linear-gradient(135deg, ${tile.color}, ${tile.colorEnd})`,
-                    boxShadow: hovered
-                        ? "none"
-                        : `0 4px 14px rgba(${hexToRgb(tile.color)},0.4)`,
-                    transform: hovered ? "scale(1.08) rotate(-4deg)" : "scale(1) rotate(0deg)",
+                    backgroundColor: hovered ? "#e0f2fe" : "#f1f5f9",
+                    color: hovered ? "#0284c7" : "#64748b",
                 }}
             >
-                <div style={{ color: hovered ? "#fff" : "#fff" }}>
-                    {tile.icon}
-                </div>
+                {tile.icon}
             </div>
 
             {/* Text */}
-            <div className="relative z-10 flex-1">
-                <div className={`font-bold text-sm leading-tight transition-colors duration-200 ${hovered ? "text-white" : "text-gray-800"}`}>
+            <div className="relative z-10 flex-1 mt-1">
+                <div className="font-semibold text-sm leading-tight text-gray-800 transition-colors duration-200 group-hover:text-[#0066A1]">
                     {tile.label}
                 </div>
-                <div className={`text-[11px] mt-1 leading-relaxed transition-colors duration-200 ${hovered ? "text-white/75" : "text-gray-400"}`}>
+                <div className="text-[11px] mt-1.5 leading-relaxed text-gray-500 line-clamp-2">
                     {tile.desc}
                 </div>
             </div>
 
-            {/* Arrow */}
-            <div className={`flex items-center gap-1 text-xs font-semibold transition-all duration-200 ${hovered ? "text-white/90 translate-x-1" : "text-gray-300 translate-x-0"
-                }`}>
-                <span>Open</span>
-                <ChevronRight size={13} />
-            </div>
-
-            {/* Bottom accent bar */}
+            {/* Left border accent on hover */}
             <div
-                className="absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 origin-left"
+                className="absolute top-0 bottom-0 left-0 w-1 transition-all duration-200"
                 style={{
-                    background: `linear-gradient(90deg, ${tile.color}, ${tile.colorEnd})`,
-                    transform: hovered ? "scaleX(0)" : "scaleX(1)",
-                    opacity: hovered ? 0 : 1,
+                    backgroundColor: "#0066A1",
+                    opacity: hovered ? 1 : 0,
                 }}
             />
         </button>
     );
 };
 
-/* ─── hex → "r,g,b" for rgba() ─── */
-function hexToRgb(hex: string): string {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `${r},${g},${b}`;
-}
+
 
 /* ─── Main Component ─── */
 const BPVDashboard: React.FC = () => {

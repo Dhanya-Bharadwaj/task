@@ -6,7 +6,7 @@
 import React, { useState } from "react";
 import MainLayout from "../layout/MainLayout";
 import {
-    UserPlus, UserCog, KeyRound, Shield, X, Save, Eye, EyeOff,
+    UserPlus, UserCog, KeyRound, Shield, Save, Eye, EyeOff,
     Trash2, ShieldCheck, PlusCircle, CheckSquare, Square,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -84,11 +84,11 @@ const UserConfig: React.FC = () => {
 
     /* Tiles */
     const tiles = [
-        { id: "add", label: "Add User", icon: <UserPlus size={40} />, gradient: "linear-gradient(135deg,#0066a1,#0284c7)", glow: "rgba(0,102,161,0.35)" },
-        { id: "edit", label: "Edit User", icon: <UserCog size={40} />, gradient: "linear-gradient(135deg,#7c3aed,#a78bfa)", glow: "rgba(124,58,237,0.35)" },
-        { id: "reset", label: "Password Reset", icon: <KeyRound size={40} />, gradient: "linear-gradient(135deg,#d97706,#fcd34d)", glow: "rgba(217,119,6,0.35)" },
-        { id: "roles", label: "User Roles", icon: <Shield size={40} />, gradient: "linear-gradient(135deg,#059669,#34d399)", glow: "rgba(5,150,105,0.35)" },
-        { id: "roleManage", label: "Role Management", icon: <ShieldCheck size={40} />, gradient: "linear-gradient(135deg,#dc2626,#f87171)", glow: "rgba(220,38,38,0.35)" },
+        { id: "add", label: "Add User", icon: <UserPlus size={28} /> },
+        { id: "edit", label: "Edit User", icon: <UserCog size={28} /> },
+        { id: "reset", label: "Password Reset", icon: <KeyRound size={28} /> },
+        { id: "roles", label: "User Roles", icon: <Shield size={28} /> },
+        { id: "roleManage", label: "Role Management", icon: <ShieldCheck size={28} /> },
     ] as const;
 
     const openPanel = (id: Panel) => { setPanel((p) => p === id ? null : id); setSelected(null); };
@@ -174,24 +174,17 @@ const UserConfig: React.FC = () => {
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 animate-fadeIn-d1">
                     {tiles.map((t, i) => (
                         <button key={t.id} onClick={() => openPanel(t.id as Panel)}
-                            className="group relative flex flex-col items-center justify-center gap-2.5 rounded-2xl overflow-hidden cursor-pointer"
-                            style={{
-                                background: t.gradient,
-                                boxShadow: panel === t.id
-                                    ? `0 0 0 3px white, 0 0 0 5px ${t.glow}, 0 8px 32px ${t.glow}`
-                                    : `0 4px 20px ${t.glow}`,
-                                minHeight: 140,
-                                animation: `slideUp 0.5s ease ${i * 70}ms both`,
-                                transition: "box-shadow 0.2s ease, transform 0.15s cubic-bezier(0.34,1.56,0.64,1)",
-                                transform: panel === t.id ? "scale(0.96)" : "scale(1)",
-                            }}>
-                            <div className="absolute inset-0 group-hover:opacity-100 opacity-0 transition-opacity duration-300 pointer-events-none"
-                                style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.18) 0%,transparent 60%)" }} />
-                            <div className="relative z-10 text-white/90 group-hover:scale-110 transition-transform duration-300">{t.icon}</div>
-                            <div className="relative z-10 text-white font-bold text-xs text-center px-2 leading-tight">{t.label}</div>
-                            {panel === t.id && (
-                                <div className="absolute top-2.5 right-2.5 bg-white/20 rounded-full p-0.5"><X size={13} className="text-white" /></div>
-                            )}
+                            className={`group flex flex-col items-center justify-center gap-2.5 rounded-xl border p-4 cursor-pointer transition-all duration-200
+                                ${panel === t.id
+                                    ? "bg-blue-50 border-blue-200 shadow-sm transform scale-95"
+                                    : "bg-white border-gray-100 hover:border-blue-100 hover:shadow shadow-sm"}`}
+                            style={{ minHeight: 120, animation: `slideUp 0.5s ease ${i * 70}ms both` }}>
+                            <div className={`transition-transform duration-300 ${panel === t.id ? "text-blue-700 scale-110" : "text-[#0066a1] group-hover:scale-110"}`}>
+                                {t.icon}
+                            </div>
+                            <div className={`font-bold text-xs text-center px-1 leading-tight ${panel === t.id ? "text-blue-900" : "text-gray-700"}`}>
+                                {t.label}
+                            </div>
                         </button>
                     ))}
                 </div>
@@ -441,8 +434,7 @@ const UserConfig: React.FC = () => {
                                         <td className="px-4 py-3 text-xs text-gray-400">{i + 1}</td>
                                         <td className="px-4 py-3">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                                                    style={{ background: "linear-gradient(135deg,#0066a1,#0284c7)" }}>
+                                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-[#0066A1] bg-gray-100 border border-gray-200 flex-shrink-0">
                                                     {u.username.charAt(0).toUpperCase()}</div>
                                                 <span className="font-mono text-xs text-gray-600">{u.username}</span>
                                             </div>

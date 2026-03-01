@@ -91,17 +91,17 @@ const LineDashboard: React.FC = () => {
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    <KpiCard label="OEE" value={data.oee} unit="%" icon={<BarChart3 size={18} />} gradient="linear-gradient(135deg,#0066a1,#0284c7)" sub="Target: 85%" delay={0} target={100} />
-                    <KpiCard label="Availability" value={data.avail} unit="%" icon={<CheckCircle size={18} />} gradient="linear-gradient(135deg,#22c55e,#16a34a)" sub="Target: 90%" delay={60} target={100} />
-                    <KpiCard label="Performance" value={data.perf} unit="%" icon={<Activity size={18} />} gradient="linear-gradient(135deg,#8b5cf6,#6d28d9)" sub="Target: 90%" delay={120} target={100} />
-                    <KpiCard label="Quality" value={data.qual} unit="%" icon={<Target size={18} />} gradient="linear-gradient(135deg,#f97316,#ea580c)" sub="Defects: OK" delay={180} target={100} />
+                    <KpiCard label="OEE" value={data.oee} unit="%" icon={<BarChart3 size={18} />} sub="Target: 85%" delay={0} target={100} />
+                    <KpiCard label="Availability" value={data.avail} unit="%" icon={<CheckCircle size={18} />} sub="Target: 90%" delay={60} target={100} />
+                    <KpiCard label="Performance" value={data.perf} unit="%" icon={<Activity size={18} />} sub="Target: 90%" delay={120} target={100} />
+                    <KpiCard label="Quality" value={data.qual} unit="%" icon={<Target size={18} />} sub="Defects: OK" delay={180} target={100} />
                 </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    <KpiCard label="Actual Output" value={data.actual} unit=" pcs" icon={<Activity size={18} />} gradient="linear-gradient(135deg,#0ea5e9,#0284c7)" sub={`Target: ${data.target}`} delay={60} target={data.target} />
-                    <KpiCard label="Achievement" value={parseFloat(((data.actual / data.target) * 100).toFixed(1))} unit="%" icon={<Target size={18} />} gradient="linear-gradient(135deg,#10b981,#059669)" delay={120} target={100} />
-                    <KpiCard label="Defects" value={data.defects} unit=" pcs" icon={<XCircle size={18} />} gradient="linear-gradient(135deg,#ef4444,#dc2626)" sub="This Shift" delay={180} />
-                    <KpiCard label="Downtime" value={data.downtime} unit=" min" icon={<Wrench size={18} />} gradient="linear-gradient(135deg,#f59e0b,#d97706)" sub="Unplanned" delay={240} />
+                    <KpiCard label="Actual Output" value={data.actual} unit=" pcs" icon={<Activity size={18} />} sub={`Target: ${data.target}`} delay={60} target={data.target} />
+                    <KpiCard label="Achievement" value={parseFloat(((data.actual / data.target) * 100).toFixed(1))} unit="%" icon={<Target size={18} />} delay={120} target={100} />
+                    <KpiCard label="Defects" value={data.defects} unit=" pcs" icon={<XCircle size={18} />} sub="This Shift" delay={180} />
+                    <KpiCard label="Downtime" value={data.downtime} unit=" min" icon={<Wrench size={18} />} sub="Unplanned" delay={240} />
                 </div>
 
                 {/* ANDON Cards */}
@@ -131,7 +131,7 @@ const LineDashboard: React.FC = () => {
                                 <div className="flex items-center gap-1.5">
                                     <StatusDot status={st.status} />
                                     <span className={`text-xs font-semibold ${st.status === "running" ? "text-green-700" :
-                                            st.status === "warning" ? "text-yellow-700" : "text-red-700"
+                                        st.status === "warning" ? "text-yellow-700" : "text-red-700"
                                         }`}>{statusLabel[st.status]}</span>
                                 </div>
 
@@ -184,7 +184,7 @@ const LineDashboard: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {data.stations.map((st, idx) => {
+                                {data.stations.map((st) => {
                                     const ach = st.target > 0 ? ((st.output / st.target) * 100).toFixed(1) : "0.0";
                                     return (
                                         <tr key={st.id} className="border-b border-gray-50 table-row-hover">
@@ -192,8 +192,8 @@ const LineDashboard: React.FC = () => {
                                             <td className="px-4 py-2.5 font-semibold text-gray-800">{st.name}</td>
                                             <td className="px-4 py-2.5">
                                                 <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${st.status === "running" ? "bg-green-100 text-green-700" :
-                                                        st.status === "warning" ? "bg-yellow-100 text-yellow-700" :
-                                                            "bg-red-100 text-red-700"
+                                                    st.status === "warning" ? "bg-yellow-100 text-yellow-700" :
+                                                        "bg-red-100 text-red-700"
                                                     }`}>
                                                     <StatusDot status={st.status} />
                                                     {statusLabel[st.status]}

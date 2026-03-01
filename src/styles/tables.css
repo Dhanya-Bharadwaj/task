@@ -1,16 +1,24 @@
 /**
  * src/styles/tables.css
- * Shared table styles used across all pages.
+ * -----------------------------------------------------------------------------
+ * Responsibility:
+ * - Shared table styles used across all pages.
+ *
+ * Notes:
+ * - Uses tailwind @apply for consistent design language.
  */
 
+/* Base table container */
 .custom-table-container {
     @apply w-full overflow-x-auto bg-white rounded-none shadow-sm;
 }
 
+/* Base table */
 .custom-table {
-    @apply w-full border-[0.5px] border-gray-300/80 text-sm text-gray-800;
+    @apply w-full table-fixed border-[0.5px] border-gray-300/80 text-sm text-gray-800;
 }
 
+/* Cell formatting */
 .custom-table th,
 .custom-table td {
     @apply px-4 py-2 border-b-[0.5px] border-gray-300/80 align-top;
@@ -23,6 +31,7 @@
     text-align: left;
 }
 
+/* Hover */
 .custom-table tbody tr:hover {
     @apply bg-gray-50 transition-colors;
 }

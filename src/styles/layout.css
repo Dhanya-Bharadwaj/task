@@ -1,8 +1,17 @@
 /**
  * src/styles/layout.css
- * Layout-level helpers and primitives.
+ * -----------------------------------------------------------------------------
+ * Responsibility:
+ * - Layout-level helpers and primitives.
+ *
+ * Notes:
+ * - Keep layout utilities here (not in component files).
  */
 
+/* ---------------------------------------------------------------------------
+   Scroll Area Helper
+   Ensures a tiny bottom gap even when internal scrollbars appear.
+--------------------------------------------------------------------------- */
 .scroll-area::after {
     content: "";
     display: block;

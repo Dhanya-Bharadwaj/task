@@ -1,17 +1,29 @@
 /**
  * src/styles/index.css
- * Aggregates all CSS modules into a single import entry.
+ * -----------------------------------------------------------------------------
+ * Responsibility:
+ * - Aggregates all CSS modules into a single import entry.
+ *
+ * Design notes:
+ * - Import order matters:
+ *   1) Tailwind directives first
+ *   2) Base resets & layout primitives
+ *   3) Reusable controls (buttons, inputs, tables)
+ *   4) Feature-specific styles (tabs, popups, animations)
  */
 
 @import "./tailwind.css";
 
+/* Base application styling */
 @import "./base.css";
 @import "./layout.css";
 @import "./animations.css";
 
+/* UI controls */
 @import "./buttons.css";
 @import "./inputs.css";
 @import "./tables.css";
 
+/* Feature blocks */
 @import "./tabs.css";
 @import "./popup.css";

@@ -1,6 +1,12 @@
 /**
  * src/styles/animations.css
- * BPV — All keyframe animations and animation utilities
+ * -----------------------------------------------------------------------------
+ * Responsibility:
+ * - All keyframe animations and animation utility classes for BPV.
+ *
+ * Notes:
+ * - ANDON pulse colours match status semantics (green/yellow/red).
+ * - Keep animation durations subtle to avoid visual fatigue.
  */
 
 /* ── Fade In ── */

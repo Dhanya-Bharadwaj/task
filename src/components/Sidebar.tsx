@@ -1,187 +1,249 @@
 /**
  * src/components/Sidebar.tsx
- * BPV animated sidebar with smooth hover, active states, collapsible.
+ * -----------------------------------------------------------------------------
+ * Single responsibility: render left navigation sidebar.
+ *
+ * - Supports collapse/expand.
+ * - Highlights active route.
+ * - Provides a Sign Out action with confirmation dialog.
  */
 import React, { useMemo, useState } from "react";
+import { useHierarchy } from "../context/HierarchyContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import ConfirmDialog from "./ConfirmDialog";
 import { useAuth } from "../auth/useAuth";
 import {
-    LayoutDashboard, Monitor, Cpu, BarChart3, ClipboardList,
-    AlertTriangle, Settings, FileText, Info, LogOut, X, Menu, Clock,
-    Grid, Users, Wrench,
+    Settings, Info, LogOut, X, Menu,
+    Users, Factory, Plus, Minus, Building2, LayoutDashboard, GitBranch
 } from "lucide-react";
 
-type NavItem = { name: string; path: string; icon: React.ReactNode; badge?: string };
+type NavItem = {
+    name: string;
+    path: string;
+    icon?: React.ReactNode;
+    children?: NavItem[];
+};
 
 const Sidebar: React.FC = () => {
     const [collapsed, setCollapsed] = useState(false);
     const [showDialog, setShowDialog] = useState(false);
-    const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+    const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
 
     const auth = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
 
-    const navItems: NavItem[] = useMemo(() => [
-        { name: "BPV Dashboard", path: "/dashboard", icon: <Grid size={20} /> },
-        { name: "Shift ANDON", path: "/home", icon: <LayoutDashboard size={20} />, badge: "LIVE" },
-        { name: "Line Dashboard", path: "/line-dashboard", icon: <Monitor size={20} /> },
-        { name: "Machine Dash.", path: "/machine-dashboard", icon: <Cpu size={20} /> },
-        { name: "OEE Analysis", path: "/oee-analysis", icon: <BarChart3 size={20} /> },
-        { name: "Hourly Prod.", path: "/hourly-production", icon: <Clock size={20} /> },
-        { name: "Losses Entry", path: "/losses-entry", icon: <AlertTriangle size={20} /> },
-        { name: "Operator Screens", path: "/operator-screens", icon: <Wrench size={20} /> },
-        { name: "Reports", path: "/reports", icon: <FileText size={20} /> },
-        { name: "User Config", path: "/user-config", icon: <Users size={20} /> },
-        { name: "Configuration", path: "/configuration", icon: <ClipboardList size={20} /> },
-        { name: "Settings", path: "/settings", icon: <Settings size={20} /> },
-        { name: "About", path: "/about", icon: <Info size={20} /> },
-    ], []);
+    /**
+     * Navigation items are memoized so the array isn't recreated every render.
+     */
+    const { hierarchy } = useHierarchy();
+    const isConfigRoute = location.pathname.startsWith("/configuration");
+
+    const navItems = useMemo(() => {
+        if (isConfigRoute) {
+            return [
+                { name: "Back to Home", path: "/landing", icon: <LayoutDashboard size={22} /> }
+            ];
+        }
+
+        const enterpriseChildren: NavItem[] = [];
+        const stack: { level: number; item: NavItem }[] = [];
+
+        for (const node of hierarchy) {
+            let navItem: NavItem;
+            if (node.level === 0) {
+                navItem = { name: node.name, path: "", icon: <Factory size={22} />, children: [] };
+                enterpriseChildren.push(navItem);
+                stack[0] = { level: 0, item: navItem };
+                stack.length = 1;
+            } else {
+                const parent = stack.slice().reverse().find(s => s.level < node.level)?.item;
+                if (parent) {
+                    navItem = { name: node.name, path: "", children: [] };
+                    if (!parent.children) parent.children = [];
+                    parent.children.push(navItem);
+                    stack[node.level] = { level: node.level, item: navItem };
+                    stack.length = node.level + 1;
+                }
+            }
+        }
+
+        // Post-process to assign real router paths to leaf nodes, and anchor hashes to parents
+        const assignPaths = (items: NavItem[], currentPath: string) => {
+            for (const item of items) {
+                const urlPart = item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                const fullPath = `${currentPath}/${urlPart}`;
+
+                if (item.children && item.children.length > 0) {
+                    item.path = `#${urlPart}`; // accordion parent
+                    assignPaths(item.children, fullPath);
+                } else {
+                    item.path = fullPath; // actual route
+                }
+            }
+        };
+
+        assignPaths(enterpriseChildren, ""); // The top level plant will be e.g. /plant-1
+
+        return [
+            { name: "Overview", path: "/dashboard", icon: <LayoutDashboard size={22} /> },
+            {
+                name: "Enterprise", path: "#enterprise", icon: <Building2 size={22} />,
+                children: enterpriseChildren
+            }
+        ];
+    }, [hierarchy, isConfigRoute]);
+
+    // We've moved Configuration out of the standard sidebar Admin section
+    const adminNavItems: NavItem[] = useMemo(() => {
+        if (isConfigRoute) {
+            return [
+                { name: "Hierarchy", path: "/configuration?tab=hierarchy", icon: <GitBranch size={22} /> },
+                { name: "Settings", path: "/configuration?tab=general", icon: <Settings size={22} /> }
+            ];
+        }
+
+        return [
+            { name: "User Config", path: "/user-config", icon: <Users size={22} /> },
+            { name: "Settings", path: "/settings", icon: <Settings size={22} /> },
+            { name: "About", path: "/about", icon: <Info size={22} /> },
+        ];
+    }, [isConfigRoute]);
+
+    // Automatically expand the parents mapping to the active route
+    React.useEffect(() => {
+        const expandPath = (items: NavItem[], path: string): boolean => {
+            let found = false;
+            for (const item of items) {
+                if (item.path === path) return true; // Found active child
+                if (item.children) {
+                    if (expandPath(item.children, path)) {
+                        setExpandedNodes(prev => ({ ...prev, [item.path]: true }));
+                        found = true;
+                    }
+                }
+            }
+            return found;
+        };
+
+        expandPath(navItems, location.pathname);
+        expandPath(adminNavItems, location.pathname);
+    }, [location.pathname, navItems, adminNavItems]);
+
+    const renderNavItem = (item: NavItem, depth: number = 0) => {
+        const isExactActive = item.path.includes("?")
+            ? (location.pathname + location.search) === item.path || (location.pathname === item.path.split("?")[0] && location.search === "" && item.path.includes("hierarchy"))
+            : location.pathname === item.path;
+
+        const hasChildren = item.children && item.children.length > 0;
+        const isExpanded = expandedNodes[item.path];
+
+        if (hasChildren) {
+            return (
+                <React.Fragment key={item.path}>
+                    <button
+                        onClick={() => setExpandedNodes((p) => ({ ...p, [item.path]: !p[item.path] }))}
+                        title={collapsed ? item.name : ""}
+                        className={`w-full flex items-center justify-between text-sm font-normal rounded-none transition-all duration-200 outline-none hover:bg-gray-800 ${depth === 0 ? "px-4 py-3" : "py-2.5"}`}
+                        style={depth > 0 ? { paddingLeft: `${16 + depth * 18}px`, paddingRight: "16px" } : {}}
+                    >
+                        <div className="flex items-center gap-3 text-gray-200">
+                            {item.icon && React.isValidElement(item.icon)
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                ? React.cloneElement(item.icon as React.ReactElement<any>, { size: depth === 0 ? 22 : 16 })
+                                : null}
+                            {!item.icon && depth > 0 && <span className="w-2" />}
+                            {!collapsed && <span className={depth > 0 ? "text-[13.5px] text-gray-300" : ""}>{item.name}</span>}
+                        </div>
+                        {!collapsed && (
+                            <div className="text-gray-400">
+                                {isExpanded ? <Minus size={15} /> : <Plus size={15} />}
+                            </div>
+                        )}
+                    </button>
+                    {isExpanded && !collapsed && (
+                        <div className={depth === 0 ? "bg-gray-950/40 pb-1" : ""}>
+                            {item.children!.map(child => renderNavItem(child, depth + 1))}
+                        </div>
+                    )}
+                </React.Fragment>
+            );
+        }
+
+        return (
+            <Link
+                key={item.path}
+                to={item.path}
+                title={collapsed ? item.name : ""}
+                className={`flex items-center gap-3 text-sm font-normal rounded-none transition-all duration-200 no-underline hover:no-underline hover:bg-gray-800
+                    ${isExactActive
+                        ? (depth === 0 ? "bg-gray-700 text-white border-l-[5px] border-[#0066A1]" : "text-white bg-gray-800/60 border-l-[3px] border-[#0066A1]")
+                        : (depth === 0 ? "text-gray-200 border-l-[3px] border-transparent" : "text-gray-400 border-l-[3px] border-transparent")
+                    }
+                    ${depth === 0 ? "px-4 py-3" : "py-2.5"}
+                `}
+                style={depth > 0 ? { paddingLeft: `${16 + depth * 18}px`, paddingRight: "16px" } : {}}
+            >
+                {item.icon && React.isValidElement(item.icon)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    ? React.cloneElement(item.icon as React.ReactElement<any>, { size: depth === 0 ? 22 : 16 })
+                    : null}
+                {!item.icon && depth > 0 && (
+                    <span className="w-2" />
+                )}
+                {!collapsed && <span className={depth > 0 ? `text-[13px] ${isExactActive ? "font-medium" : ""}` : ""}>{item.name}</span>}
+            </Link>
+        );
+    };
 
     return (
         <aside
-            className="h-screen text-gray-200 flex flex-col justify-between transition-all duration-300 ease-in-out relative"
-            style={{
-                width: collapsed ? 64 : 220,
-                background: "linear-gradient(180deg, #0d1b2a 0%, #0a1628 60%, #061220 100%)",
-                boxShadow: "4px 0 24px rgba(0,0,0,0.35)",
-            }}
+            className={`${collapsed ? "w-16" : "w-64"} h-screen bg-gray-900 text-gray-200 flex flex-col justify-between transition-all duration-300 overflow-y-auto custom-scrollbar`}
         >
-            {/* Decorative gradient line at top */}
-            <div className="absolute top-0 left-0 right-0 h-0.5"
-                style={{ background: "linear-gradient(90deg, #0066a1, #00a0dc, #0066a1)" }} />
-
-            {/* TOP SECTION */}
-            <div className="flex flex-col">
-                {/* Header */}
-                <div className="flex items-center justify-between px-3 py-3.5 border-b border-white/10">
+            {/* Top Section */}
+            <div>
+                {/* Header section showing version info and collapse/expand button */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700 sticky top-0 bg-gray-900 z-10">
                     {!collapsed && (
-                        <div className="animate-slideInLeft overflow-hidden">
-                            <div className="text-[10px] text-gray-400 font-medium uppercase tracking-widest leading-none">BPV</div>
-                            <div className="text-xs text-white/70 leading-none mt-0.5">v1.0.0</div>
-                        </div>
+                        <span className="text-sm font-normal text-white tracking-wide mt-1">
+                            Version 1.0.0
+                        </span>
                     )}
+
                     <button
                         onClick={() => setCollapsed((v) => !v)}
-                        className="ml-auto p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
-                        aria-label="Toggle sidebar"
+                        className="text-gray-400 hover:text-white mt-1"
+                        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                     >
-                        {collapsed ? <Menu size={20} /> : <X size={20} />}
+                        {collapsed ? <Menu size={26} /> : <X size={26} />}
                     </button>
                 </div>
 
-                {/* Nav */}
-                <nav className="mt-2 flex flex-col gap-0.5 px-1.5">
-                    {navItems.map((item, idx) => {
-                        const isActive = location.pathname === item.path;
-                        const isHovered = hoveredItem === item.name;
+                {/* Navigation Menu */}
+                <nav className="mt-2 flex flex-col">
+                    {navItems.map(item => renderNavItem(item, 0))}
 
-                        return (
-                            <React.Fragment key={item.name}>
-                                <Link
-                                    to={item.path}
-                                    title={collapsed ? item.name : ""}
-                                    onMouseEnter={() => setHoveredItem(item.name)}
-                                    onMouseLeave={() => setHoveredItem(null)}
-                                    className="relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-normal no-underline hover:no-underline
-                    transition-all duration-200 group overflow-hidden"
-                                    style={{
-                                        color: isActive ? "#ffffff" : "#94a3b8",
-                                        background: isActive
-                                            ? "linear-gradient(90deg, rgba(0,102,161,0.55) 0%, rgba(0,102,161,0.15) 100%)"
-                                            : isHovered
-                                                ? "rgba(255,255,255,0.06)"
-                                                : "transparent",
-                                        transitionTimingFunction: "cubic-bezier(0.4,0,0.2,1)",
-                                    }}
-                                >
-                                    {/* Active left bar */}
-                                    <div
-                                        className="absolute left-0 top-0 bottom-0 w-0.5 rounded-r transition-all duration-300"
-                                        style={{
-                                            background: "#0096d4",
-                                            opacity: isActive ? 1 : 0,
-                                            transform: isActive ? "scaleY(1)" : "scaleY(0)",
-                                        }}
-                                    />
+                    <div className="border-t border-gray-700 my-2 mx-3" />
 
-                                    {/* Icon */}
-                                    <div
-                                        className="flex-shrink-0 transition-all duration-200"
-                                        style={{
-                                            color: isActive ? "#00c4ff" : isHovered ? "#7dd3fc" : "#94a3b8",
-                                            transform: isHovered && !isActive ? "scale(1.1)" : "scale(1)",
-                                        }}
-                                    >
-                                        {React.isValidElement(item.icon)
-                                            ? React.cloneElement(item.icon as React.ReactElement<{ size?: number }>, { size: 18 })
-                                            : item.icon}
-                                    </div>
-
-                                    {/* Label + Badge */}
-                                    {!collapsed && (
-                                        <div className="flex items-center justify-between flex-1 min-w-0">
-                                            <span className="truncate text-xs font-medium">{item.name}</span>
-                                            {item.badge && (
-                                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded text-white animate-blink"
-                                                    style={{ background: "#dc2626", fontSize: "9px" }}>
-                                                    {item.badge}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-                                </Link>
-
-                                {/* Separator after Reports */}
-                                {item.name === "Reports" && (
-                                    <div className="my-1.5 mx-3 border-t border-white/10" />
-                                )}
-
-                                {/* Stagger animation style scoped per item */}
-                                <style>{`
-                  .nav-item-${idx} { animation: slideUp 0.35s ease ${idx * 0.04}s both; }
-                  @keyframes slideUp {
-                    from { opacity: 0; transform: translateX(-10px); }
-                    to   { opacity: 1; transform: translateX(0); }
-                  }
-                `}</style>
-                            </React.Fragment>
-                        );
-                    })}
+                    {/* Admin Nav Items */}
+                    {adminNavItems.map(item => renderNavItem(item, 0))}
                 </nav>
             </div>
 
-            {/* BOTTOM SECTION */}
-            <div className="border-t border-white/10 px-1.5 py-2">
-                {/* User info */}
-                {!collapsed && auth?.user && (
-                    <div className="flex items-center gap-2 px-2 py-2 mb-1">
-                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                            style={{ background: "linear-gradient(135deg,#0066a1,#00a0dc)" }}>
-                            {auth.user.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                            <div className="text-xs font-semibold text-white truncate">{auth.user}</div>
-                            <div className="text-[10px] text-gray-500">Operator</div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Sign Out */}
+            {/* Bottom Section - Sign Out */}
+            <div className="border-t border-gray-700">
                 <button
                     onClick={() => setShowDialog(true)}
                     title={collapsed ? "Sign Out" : ""}
-                    className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-xs font-medium
-            text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                    className="flex items-center gap-3 px-4 py-3 w-full text-sm font-normal text-gray-200 hover:bg-gray-800 text-left"
                 >
-                    <LogOut size={18} />
+                    <LogOut size={22} />
                     {!collapsed && <span>Sign Out</span>}
                 </button>
 
                 {showDialog && (
                     <ConfirmDialog
-                        message="You are signing-out now. Please confirm."
+                        message="You are signing-out now, please confirm to proceed."
                         confirmText="Sign Out"
                         cancelText="Cancel"
                         onConfirm={() => {
